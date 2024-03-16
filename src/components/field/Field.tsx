@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, MouseEvent } from 'react'
 import styles from './field.module.css'
 import { Ball } from '../../models/Ball.ts'
 
@@ -26,7 +26,7 @@ export const Field = () => {
           continue
         }
       }
-      ballsArr.push(new Ball({ x, y, dy: 4, dx: 4, radius, color: 'red', ctx, id: i }))
+      ballsArr.push(new Ball({ x, y, radius, color: 'red', ctx, id: i }))
     }
     // ballsArr.forEach(ball => ball.draw(fieldHeight, fieldWidth))
     return ballsArr
@@ -39,12 +39,23 @@ export const Field = () => {
       canvasCtxRef.current.fillRect(0, 0, 400, 600)
       balls.forEach(ball => {
         ball.draw(canvasRef.current.height, canvasRef.current.width, balls.filter(otherBall => otherBall.id !== ball.id))
-        ball.x += ball.dx
-        ball.y += ball.dy
+        ball.x += ball.vx
+        ball.y += ball.vy
       })
       requestRef.current = window.requestAnimationFrame(() => drawAll(balls))
     } else {
       throw new Error('Error')
+    }
+  }
+
+  const moveBallOnClick = (e: MouseEvent<HTMLCanvasElement>) => {
+    if (ballsRef.current) {
+      ballsRef.current.forEach(ball => {
+        if (Math.sqrt(Math.pow(ball.x - e.clientX, 2) + Math.pow(ball.y - e.clientY, 2)) <= ball.radius) {
+          ball.vx = 2
+          ball.vy = 2
+        }
+      })
     }
   }
 
@@ -58,7 +69,7 @@ export const Field = () => {
     }
 
     if (canvasCtxRef.current !== null) {
-      ballsRef.current = generateBalls(2, canvasCtxRef.current, canvasRef.current.width, canvasRef.current.height)
+      ballsRef.current = generateBalls(8, canvasCtxRef.current, canvasRef.current.width, canvasRef.current.height)
     } else {
       throw new Error('No canvas context is found.')
     }
@@ -81,27 +92,8 @@ export const Field = () => {
   }, [])
 
   return (
-    <canvas ref={canvasRef} className={styles.field}>
+    <canvas ref={canvasRef} className={styles.field} onClick={(e) => moveBallOnClick(e)}>
 
     </canvas>
   )
 }
-
-// otherBalls.forEach(ball => {
-//   if (Math.floor(Math.sqrt(Math.pow(this.x - ball.x, 2) + Math.pow(this.y - ball.y, 2))) <= ball.radius + this.radius) {
-//     const angle = Math.atan((this.x - ball.x) / (this.y - ball.y)) + Math.PI
-//     const speed = this.speed / 2
-//     const ballDy = speed * Math.cos(angle)
-//     const ballDx = Math.sqrt(speed * speed - ballDy * ballDy)
-//     ball.dx = ballDx
-//     ball.dy = ballDy
-//     ball.y += 3*ballDy
-//     ball.x += 3*ballDx
-//     const dy = speed * Math.cos(angle - Math.PI / 2)
-//     const dx = Math.sqrt(speed * speed - dy * dy)
-//     this.dx = dx
-//     this.dy = dy
-//     this.x += 3*dx
-//     this.y += 3*dy
-//   }
-// })
