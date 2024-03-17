@@ -20,8 +20,8 @@ export class Ball implements BallProps {
   constructor({ x, y, radius, color, ctx, id }: BallProps) {
     this.x = x
     this.y = y
-    this.vx = 2
-    this.vy = 2
+    this.vx = 0
+    this.vy = 0
     this.radius = radius
     this.color = color
     this.ctx = ctx
