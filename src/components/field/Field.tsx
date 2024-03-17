@@ -1,6 +1,7 @@
-import { useEffect, useRef, MouseEvent } from 'react'
+import { useEffect, useRef, MouseEvent, useState } from 'react'
 import styles from './field.module.css'
 import { Ball } from '../../models/Ball.ts'
+import { Modal } from '../modal/Modal.tsx'
 
 export const Field = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -9,6 +10,8 @@ export const Field = () => {
   const ballsRef = useRef<Ball[] | null>(null)
   const selectedBallRef = useRef<Ball | null>(null)
   const clientCoordinatesRef = useRef<null | {x: number, y: number}>(null)
+
+  const [isModalActive, setIsModalActive] = useState(false)
 
   const generateBalls = (ballsQuantity: number, ctx: CanvasRenderingContext2D, fieldWidth: number, fieldHeight: number) => {
     const ballsArr: Ball[] = []
@@ -81,6 +84,17 @@ export const Field = () => {
     }
   }
 
+  const handleClick = (e: MouseEvent<HTMLCanvasElement>) => {
+    if (ballsRef.current) {
+      ballsRef.current.forEach(ball => {
+        if (Math.hypot(ball.x - e.clientX, ball.y - e.clientY) <= ball.radius) {
+          selectedBallRef.current = ball
+          setIsModalActive(true)
+        }
+      })
+    }
+  }
+
   useEffect(() => {
     if (canvasRef.current !== null) {
       canvasCtxRef.current = canvasRef.current.getContext('2d')
@@ -98,14 +112,12 @@ export const Field = () => {
 
     if (ballsRef.current) {
       canvasRef.current.addEventListener('mouseover', () => {
-        console.log('over')
         requestRef.current = window.requestAnimationFrame(() =>
           drawAll(ballsRef.current as Ball[]),
         )
       })
 
       canvasRef.current.addEventListener('mouseout', () => {
-        console.log('out')
         cancelAnimationFrame(requestRef.current as number)
       })
 
@@ -121,8 +133,11 @@ export const Field = () => {
   }, [])
 
   return (
-    <canvas ref={canvasRef} className={styles.field} onMouseUp={() => {handleMouseUp()}} onMouseDown={(e) => handleMouseDown(e)}>
+    <>
+    <canvas ref={canvasRef} className={styles.field} onMouseUp={() => {handleMouseUp()}} onMouseDown={(e) => handleMouseDown(e)} onClick={(e) => handleClick(e)}>
 
     </canvas>
+    {isModalActive && <Modal ball={selectedBallRef.current} closeModal={() => setIsModalActive(false)}/>}
+    </>
   )
 }
