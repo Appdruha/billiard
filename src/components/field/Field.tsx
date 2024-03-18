@@ -86,6 +86,7 @@ export const Field = () => {
 
   return (
     <>
+      <div className={styles.fieldContainer}>
         <canvas ref={canvasRef} className={styles.field}
                 onMouseOver={() => handleMouseOver()}
                 onMouseOut={() => handleMouseOut()}
@@ -96,6 +97,7 @@ export const Field = () => {
                     clientCoordinatesRef,
                     isDrawingHitLine,
                     event,
+                    canvas: canvasRef.current
                   })
                 }}
                 onMouseUp={() => {
@@ -116,6 +118,7 @@ export const Field = () => {
                 }}
         >
         </canvas>
+      </div>
       {isModalActive && <Modal ball={selectedBallRef.current} closeModal={handleCloseModal} />}
     </>
   )

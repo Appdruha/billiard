@@ -9,6 +9,8 @@ interface HandleMouseDownParams {
 
 export const handleMouseDown = ({ balls, clientCoordinates, selectedBallRef }: HandleMouseDownParams) => {
   if (balls && clientCoordinates) {
+    console.log(balls)
+    console.log(clientCoordinates)
     balls.forEach(ball => {
       if (Math.hypot(ball.x - clientCoordinates.x, ball.y - clientCoordinates.y) <= ball.radius) {
         selectedBallRef.current = ball

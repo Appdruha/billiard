@@ -1,3 +1,10 @@
+.fieldContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
 .field {
     outline: 2px solid black;
 }

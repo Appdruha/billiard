@@ -9,12 +9,17 @@ interface HandleMouseMoveParams {
   isPlayerOnField: MutableRefObject<boolean | null>
   selectedBall: Ball | null
   event: MouseEvent<HTMLCanvasElement>
+  canvas: HTMLCanvasElement | null
 }
 
-export const handleMouseMove = ({clientCoordinatesRef, selectedBall, isDrawingHitLine, isPlayerOnField, event}: HandleMouseMoveParams) => {
+export const handleMouseMove = ({clientCoordinatesRef, selectedBall, isDrawingHitLine, isPlayerOnField, event, canvas}: HandleMouseMoveParams) => {
+  if (!canvas) {
+    throw new Error('handleMouseMove Error')
+  }
+  const {x: canvasX, y: canvasY} = canvas.getBoundingClientRect()
   clientCoordinatesRef.current = {
-    x: event.clientX,
-    y: event.clientY,
+    x: event.clientX - canvasX,
+    y: event.clientY - canvasY,
   }
   if (isPlayerOnField.current) {
     if (!isDrawingHitLine.current) {
