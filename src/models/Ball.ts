@@ -47,42 +47,33 @@ export class Ball implements BallProps {
       const dx = ball.x - this.x,
         dy = ball.y - this.y,
         dist = Math.sqrt(dx * dx + dy * dy)
-      //collision handling code here
+      //вычисляем коллизии
       if (dist < this.radius + ball.radius) {
-        //calculate angle, sine, and cosine
         const angle = Math.atan2(dy, dx)
         const sin = Math.sin(angle)
         const cos = Math.cos(angle)
-        //rotate ball0's position
-        const pos0 = { x: 0, y: 0 } //point
-        //rotate ball1's position
+        const pos0 = { x: 0, y: 0 }
         const pos1 = this.rotate(dx, dy, sin, cos, true)
-        //rotate ball0's velocity
         const vel0 = this.rotate(this.vx, this.vy, sin, cos, true)
-        //rotate ball1's velocity
         const vel1 = this.rotate(ball.vx, ball.vy, sin, cos, true)
-        //collision reaction
+        //реагируем на коллизию
         const vxTotal = vel0.x - vel1.x
         vel0.x = vel1.x
         vel1.x = vxTotal + vel0.x
-        //update position - to avoid objects becoming stuck together
+        //обновляем позиции чтобы шары не застряли друг в друге
         const absV = Math.abs(vel0.x) + Math.abs(vel1.x)
         const overlap = (this.radius + ball.radius) - Math.abs(pos0.x - pos1.x)
         pos0.x += vel0.x / absV * overlap
         pos1.x += vel1.x / absV * overlap
-        //rotate positions back
-        const pos0F = this.rotate(pos0.x, pos0.y, sin, cos, false),
-          pos1F = this.rotate(pos1.x, pos1.y, sin, cos, false)
-        //adjust positions to actual screen positions
-        // ball1.x = ball0.x + pos1F.x;
+        //возвращаем позиции
+        const pos0F = this.rotate(pos0.x, pos0.y, sin, cos, false)
+        const pos1F = this.rotate(pos1.x, pos1.y, sin, cos, false)
+
         ball.x = this.x + pos1F.x
-        //ball1.y = ball0.y + pos1F.y;
         ball.y = this.y + pos1F.y
-        // ball0.x = ball0.x + pos0F.x;
         this.x = this.x + pos0F.x
-        // ball0.y = ball0.y + pos0F.y;
         this.y = this.y + pos0F.y
-        //rotate velocities back
+        //возвращаем скорости
         const vel0F = this.rotate(vel0.x, vel0.y, sin, cos, false),
           vel1F = this.rotate(vel1.x, vel1.y, sin, cos, false)
         this.vx = vel0F.x
