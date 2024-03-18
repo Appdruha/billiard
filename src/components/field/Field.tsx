@@ -22,10 +22,10 @@ export const Field = () => {
   const [isModalActive, setIsModalActive] = useState(false)
 
   function drawAll(balls: Ball[]) {
-    if (canvasCtxRef.current) {
+    if (canvasCtxRef.current && canvasRef.current) {
       canvasCtxRef.current.clearRect(0, 0, fieldSize.width, fieldSize.height)
       canvasCtxRef.current.fillStyle = 'green'
-      canvasCtxRef.current.fillRect(0, 0, 400, 600)
+      canvasCtxRef.current.fillRect(0, 0, fieldSize.width, fieldSize.height)
       balls.forEach(ball => {
         ball.draw(fieldSize.height, fieldSize.width, balls.filter(otherBall => otherBall.id !== ball.id))
         ball.x += ball.vx
@@ -86,35 +86,36 @@ export const Field = () => {
 
   return (
     <>
-      <canvas ref={canvasRef} className={styles.field}
-              onMouseOver={() => handleMouseOver()}
-              onMouseOut={() => handleMouseOut()}
-              onMouseMove={(event) => {
-                handleMouseMove({
-                  selectedBall: selectedBallRef.current,
-                  isPlayerOnField,
-                  clientCoordinatesRef,
-                  isDrawingHitLine,
-                  event,
-                })
-              }}
-              onMouseUp={() => {
-                handleMouseUp({
-                  selectedBallRef,
-                  isDrawingHitLine,
-                  isPlayerOnField,
-                  clientCoordinates: clientCoordinatesRef.current,
-                  setIsModalActive,
-                })
-              }}
-              onMouseDown={() => {
-                handleMouseDown({
-                  balls: ballsRef.current,
-                  clientCoordinates: clientCoordinatesRef.current,
-                  selectedBallRef,
-                })
-              }}
-      ></canvas>
+        <canvas ref={canvasRef} className={styles.field}
+                onMouseOver={() => handleMouseOver()}
+                onMouseOut={() => handleMouseOut()}
+                onMouseMove={(event) => {
+                  handleMouseMove({
+                    selectedBall: selectedBallRef.current,
+                    isPlayerOnField,
+                    clientCoordinatesRef,
+                    isDrawingHitLine,
+                    event,
+                  })
+                }}
+                onMouseUp={() => {
+                  handleMouseUp({
+                    selectedBallRef,
+                    isDrawingHitLine,
+                    isPlayerOnField,
+                    clientCoordinates: clientCoordinatesRef.current,
+                    setIsModalActive,
+                  })
+                }}
+                onMouseDown={() => {
+                  handleMouseDown({
+                    balls: ballsRef.current,
+                    clientCoordinates: clientCoordinatesRef.current,
+                    selectedBallRef,
+                  })
+                }}
+        >
+        </canvas>
       {isModalActive && <Modal ball={selectedBallRef.current} closeModal={handleCloseModal} />}
     </>
   )
