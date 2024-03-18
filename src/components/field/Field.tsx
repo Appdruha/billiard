@@ -9,7 +9,9 @@ export const Field = () => {
   const requestRef = useRef<undefined | number>(undefined)
   const ballsRef = useRef<Ball[] | null>(null)
   const selectedBallRef = useRef<Ball | null>(null)
-  const clientCoordinatesRef = useRef<null | {x: number, y: number}>(null)
+  const clientCoordinatesRef = useRef<null | { x: number, y: number }>(null)
+  const isDrawingHitLine = useRef(false)
+  const isPlayerOnField = useRef(false)
 
   const [isModalActive, setIsModalActive] = useState(false)
 
@@ -46,7 +48,8 @@ export const Field = () => {
         ball.x += ball.vx
         ball.y += ball.vy
       })
-      if (selectedBallRef.current !== null) {
+
+      if (selectedBallRef.current !== null && isDrawingHitLine.current) {
         drawHitLine()
       }
       requestRef.current = window.requestAnimationFrame(() => drawAll(balls))
@@ -56,11 +59,11 @@ export const Field = () => {
   }
 
   const drawHitLine = () => {
-    if (selectedBallRef.current && canvasRef.current && canvasCtxRef.current && clientCoordinatesRef) {
+    if (selectedBallRef.current && canvasRef.current && canvasCtxRef.current && clientCoordinatesRef.current && isDrawingHitLine.current) {
       canvasCtxRef.current.beginPath()
       canvasCtxRef.current.moveTo(selectedBallRef.current.x, selectedBallRef.current.y)
       canvasCtxRef.current.lineTo(clientCoordinatesRef.current.x, clientCoordinatesRef.current.y)
-      canvasCtxRef.current.strokeStyle = "orange"
+      canvasCtxRef.current.strokeStyle = 'orange'
       canvasCtxRef.current.lineWidth = 5
       canvasCtxRef.current.stroke()
     }
@@ -78,21 +81,36 @@ export const Field = () => {
 
   const handleMouseUp = () => {
     if (selectedBallRef.current) {
-      selectedBallRef.current.vx = -(clientCoordinatesRef.current.x - selectedBallRef.current.x) / 50
-      selectedBallRef.current.vy = -(clientCoordinatesRef.current.y - selectedBallRef.current.y) / 50
-      selectedBallRef.current = null
+      if (Math.hypot(selectedBallRef.current.x - clientCoordinatesRef.current.x, selectedBallRef.current.y - clientCoordinatesRef.current.y) <= selectedBallRef.current.radius) {
+        setIsModalActive(true)
+        isPlayerOnField.current = false
+        console.log(isPlayerOnField.current)
+      } else {
+        selectedBallRef.current.vx = -(clientCoordinatesRef.current.x - selectedBallRef.current.x) / 50
+        selectedBallRef.current.vy = -(clientCoordinatesRef.current.y - selectedBallRef.current.y) / 50
+        selectedBallRef.current = null
+        isDrawingHitLine.current = false
+      }
     }
   }
 
-  const handleClick = (e: MouseEvent<HTMLCanvasElement>) => {
-    if (ballsRef.current) {
-      ballsRef.current.forEach(ball => {
-        if (Math.hypot(ball.x - e.clientX, ball.y - e.clientY) <= ball.radius) {
-          selectedBallRef.current = ball
-          setIsModalActive(true)
-        }
-      })
+  const handleMouseMove = (e: any) => {
+    clientCoordinatesRef.current = {
+      x: e.clientX,
+      y: e.clientY,
     }
+    if (isPlayerOnField.current) {
+      if (!isDrawingHitLine.current) {
+        if (selectedBallRef.current && Math.hypot(selectedBallRef.current.x - e.clientX, selectedBallRef.current.y - e.clientY) > selectedBallRef.current.radius) {
+          isDrawingHitLine.current = true
+        }
+      }
+    }
+  }
+
+  const handleCloseModal = () => {
+    setIsModalActive(false)
+    selectedBallRef.current = null
   }
 
   useEffect(() => {
@@ -112,32 +130,34 @@ export const Field = () => {
 
     if (ballsRef.current) {
       canvasRef.current.addEventListener('mouseover', () => {
+        isPlayerOnField.current = true
         requestRef.current = window.requestAnimationFrame(() =>
           drawAll(ballsRef.current as Ball[]),
         )
       })
 
       canvasRef.current.addEventListener('mouseout', () => {
+        isPlayerOnField.current = false
         cancelAnimationFrame(requestRef.current as number)
       })
 
-      canvasRef.current.addEventListener('mousemove', (e) => {
-        clientCoordinatesRef.current = {
-          x: e.clientX,
-          y: e.clientY
-        }
-      })
+      canvasRef.current.addEventListener('mousemove', (e) => handleMouseMove(e))
     }
 
-    return () => cancelAnimationFrame(requestRef.current as number)
+    return () => {
+      isPlayerOnField.current = false
+      cancelAnimationFrame(requestRef.current as number)
+    }
   }, [])
 
   return (
     <>
-    <canvas ref={canvasRef} className={styles.field} onMouseUp={() => {handleMouseUp()}} onMouseDown={(e) => handleMouseDown(e)} onClick={(e) => handleClick(e)}>
+      <canvas ref={canvasRef} className={styles.field} onMouseUp={() => {
+        handleMouseUp()
+      }} onMouseDown={(e) => handleMouseDown(e)}>
 
-    </canvas>
-    {isModalActive && <Modal ball={selectedBallRef.current} closeModal={() => setIsModalActive(false)}/>}
+      </canvas>
+      {isModalActive && <Modal ball={selectedBallRef.current} closeModal={handleCloseModal} />}
     </>
   )
 }
